@@ -382,4 +382,39 @@ void IEKF::predict(float dt)
 		_pub_global_position.publish(msg);
 	}
 
+	// publish control state
+	{
+		control_state_s msg = {};
+		msg.x_acc = 0;
+		msg.y_acc = 0;
+		msg.z_acc = 0;
+		msg.x_vel = _x(X::vel_n);
+		msg.y_vel = _x(X::vel_e);
+		msg.z_vel = _x(X::vel_d);
+		msg.x_pos = _x(X::pos_n);
+		msg.y_pos = _x(X::pos_e);
+		msg.z_pos = _x(X::pos_d);
+		msg.airspeed = 0;
+		msg.airspeed_valid = false;
+		msg.vel_variance[0] = _P(Xe::vel_n, Xe::vel_n);
+		msg.vel_variance[1] = _P(Xe::vel_e, Xe::vel_e);
+		msg.vel_variance[2] = _P(Xe::vel_d, Xe::vel_d);
+		msg.pos_variance[0] = _P(Xe::pos_n, Xe::pos_n);
+		msg.pos_variance[1] = _P(Xe::pos_e, Xe::pos_e);
+		msg.pos_variance[2] = _P(Xe::pos_d, Xe::pos_d);
+		msg.q[0] = _x(X::q_nb_0);
+		msg.q[1] = _x(X::q_nb_1);
+		msg.q[2] = _x(X::q_nb_2);
+		msg.q[3] = _x(X::q_nb_3);
+		msg.delta_q_reset[0] = 0;
+		msg.delta_q_reset[1] = 0;
+		msg.delta_q_reset[2] = 0;
+		msg.delta_q_reset[3] = 0;
+		msg.quat_reset_counter = 0;
+		msg.roll_rate = _u(U::omega_nb_bx);
+		msg.pitch_rate = _u(U::omega_nb_by);
+		msg.yaw_rate = _u(U::omega_nb_bz);
+		msg.horz_acc_mag = 0;
+		_pub_control_state.publish(msg);
+	}
 }
