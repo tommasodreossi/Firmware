@@ -418,3 +418,34 @@ void IEKF::predict(float dt)
 		_pub_control_state.publish(msg);
 	}
 }
+
+void IEKF::applyErrorCorrection(Vector<float, Xe::n> d_xe)
+{
+	Quaternion<float> q_nb(_x(X::q_nb_0), _x(X::q_nb_1), _x(X::q_nb_2), _x(X::q_nb_3));
+	Quaternion<float> d_q_nb = Quaternion<float>(0,
+				   d_xe(Xe::rot_n), d_xe(Xe::rot_e), d_xe(Xe::rot_d)) * q_nb;
+	//ROS_INFO("d_q_nb");
+	//d_q_nb.print();
+	Vector3<float> d_gyro_bias_b = q_nb.conjugate_inversed(
+					       Vector3<float>(d_xe(Xe::gyro_bias_n),
+							       d_xe(Xe::gyro_bias_e),
+							       d_xe(Xe::gyro_bias_d)));
+
+	// linear term correction is the same
+	// as the error correction
+	_x(X::q_nb_0) += d_q_nb(0);
+	_x(X::q_nb_1) += d_q_nb(1);
+	_x(X::q_nb_2) += d_q_nb(2);
+	_x(X::q_nb_3) += d_q_nb(3);
+	_x(X::gyro_bias_bx) += d_gyro_bias_b(0);
+	_x(X::gyro_bias_by) += d_gyro_bias_b(1);
+	_x(X::gyro_bias_bz) += d_gyro_bias_b(2);
+	_x(X::vel_n) += d_xe(Xe::vel_n);
+	_x(X::vel_e) += d_xe(Xe::vel_e);
+	_x(X::vel_d) += d_xe(Xe::vel_d);
+	_x(X::pos_n) += d_xe(Xe::pos_n);
+	_x(X::pos_e) += d_xe(Xe::pos_e);
+	_x(X::pos_d) += d_xe(Xe::pos_d);
+	_x(X::terrain_alt) += d_xe(Xe::terrain_alt);
+	_x(X::baro_bias) += d_xe(Xe::baro_bias);
+}
